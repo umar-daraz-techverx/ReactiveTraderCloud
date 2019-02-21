@@ -13,6 +13,15 @@
 
 </head>
 
+<!--
+
+	DO NOT DELETE THIS SCRIPT TAG BELOW WHEN UPDATING CHARTIQ
+	this file below contains message handlers for OF and FSBL
+
+ -->
+<script src="./setup.js"></script>
+
+
 <body cq-context class="no-touch">
 <cq-ui-manager></cq-ui-manager>
 <cq-color-picker>
@@ -1019,6 +1028,7 @@ new CIQ.ExtendedHours(stxx,["post","pre"]);
 //TODO, encapsulate these in a helper object
 function restoreLayout(stx, cb){
 	var datum=CIQ.localStorage.getItem("myChartLayout");
+	console.log(datum)
 	if(datum===null) return;
 	function closure(){
 		restoreDrawings(stx, stx.chart.symbol);

@@ -108,6 +108,11 @@ export class ServiceStub {
         destination: `/amq/queue/${remoteProcedure}`,
         body: JSON.stringify(dto),
       })
-      .pipe(map(message => JSON.parse(message.body) as TResponse))
+      .pipe(
+        tap(message =>
+          this.logResponse(remoteProcedure, { headers: message.headers, body: message.body }),
+        ),
+        map(message => JSON.parse(message.body) as TResponse),
+      )
   }
 }

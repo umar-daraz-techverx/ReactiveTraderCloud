@@ -15,12 +15,19 @@ export class ServiceInstanceCollection {
     return Array.from(this.serviceMap.values())
   }
 
+  getServiceWithMinLoad() {
+    return this.getServiceInstances()
+      .filter(x => x.isConnected)
+      .sort((x, y) => x.serviceLoad - y.serviceLoad)[0]
+  }
+
   get(serviceInstance: string) {
     return this.serviceMap.get(serviceInstance)
   }
 }
 
 export interface IServiceStatusCollection {
+  getServiceInstanceWithMinimumLoad: (serviceType: string) => ServiceInstanceStatus | undefined
   getServiceInstanceStatus: (type: string, instance: string) => ServiceInstanceStatus | undefined
 }
 export class ServiceCollectionMap implements IServiceStatusCollection {
@@ -47,6 +54,16 @@ export class ServiceCollectionMap implements IServiceStatusCollection {
     return undefined
   }
 
+  getServiceInstanceWithMinimumLoad(serviceType: string) {
+    const x = this.serviceInstanceCollections.get(serviceType)
+
+    if (x) {
+      return x.getServiceWithMinLoad()
+    }
+
+    return undefined
+  }
+
   getStatusOfServices(): ServiceConnectionInfo {
     return Array.from(this.serviceInstanceCollections.values()).reduce<ServiceConnectionInfo>(
       (acc, next) => {
@@ -55,7 +72,7 @@ export class ServiceCollectionMap implements IServiceStatusCollection {
           connectedInstanceCount: next
             .getServiceInstances()
             .filter(instance => instance.isConnected === true).length,
-          connectionStatus: next.getServiceInstances()
+          connectionStatus: next.getServiceWithMinLoad()
             ? ServiceConnectionStatus.CONNECTED
             : ServiceConnectionStatus.DISCONNECTED,
         }

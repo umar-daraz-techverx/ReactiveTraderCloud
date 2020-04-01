@@ -4,7 +4,6 @@ using System.Reactive.Subjects;
 using System.Text;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
 using Serilog;
 
 namespace Adaptive.ReactiveTrader.Messaging
@@ -16,14 +15,13 @@ namespace Adaptive.ReactiveTrader.Messaging
         private readonly string _correlationId;
         private readonly Subject<Unit> _subject;
 
-        public PrivateEndpoint(IModel channel, string topic, string correlationId) 
+        public PrivateEndpoint(IModel channel, string topic, string correlationId)
         {
             _channel = channel;
             _topic = topic;
             _correlationId = correlationId;
             _subject = new Subject<Unit>();
 
-            _channel.BasicReturn += OnChannelReturn;
             _channel.ModelShutdown += OnModelShutdown;
         }
 
@@ -48,12 +46,11 @@ namespace Adaptive.ReactiveTrader.Messaging
         }
 
         private void OnModelShutdown(object sender, ShutdownEventArgs e) => TearDown();
-        private void OnChannelReturn(object sender, BasicReturnEventArgs e) => TearDown();
         private void TearDown()
         {
             _subject.OnNext(Unit.Default);
-            _channel.BasicReturn -= OnChannelReturn;
             _channel.ModelShutdown -= OnModelShutdown;
+            Log.Information($"Enpoint to {_topic} with correlationId {_correlationId} was disposed.");
         }
 
         public IObservable<Unit> TerminationSignal => _subject;
